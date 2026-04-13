@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ROLE_LABELS } from './DashboardHeader'
 
 export type CompanyWorkspaceKind = 'client' | 'hr' | 'payroll' | 'supervisor'
@@ -14,6 +14,7 @@ const WORKSPACE_META: Record<
 }
 
 export type SectionLink = { id: string; label: string }
+export type WorkspaceNavLink = { to: string; label: string }
 
 type CompanyWorkspaceLayoutProps = {
   kind: CompanyWorkspaceKind
@@ -21,6 +22,7 @@ type CompanyWorkspaceLayoutProps = {
   headerSubtitle?: string
   /** Optional in-page anchors (e.g. company admin long page). */
   sectionLinks?: SectionLink[]
+  navLinks?: WorkspaceNavLink[]
   children: React.ReactNode
 }
 
@@ -29,9 +31,11 @@ export default function CompanyWorkspaceLayout({
   headerTitle,
   headerSubtitle,
   sectionLinks,
+  navLinks,
   children,
 }: CompanyWorkspaceLayoutProps) {
   const navigate = useNavigate()
+  const location = useLocation()
   const role = localStorage.getItem('hris_user_role') || ''
   const email = localStorage.getItem('hris_user_email') || ''
   const companyName = localStorage.getItem('hris_company_name') || 'Company'
@@ -67,6 +71,28 @@ export default function CompanyWorkspaceLayout({
           <p className="mt-1 text-sm font-semibold text-emerald-300/95">{meta.navLabel}</p>
           <p className="text-xs text-slate-500">{meta.navHint}</p>
         </div>
+
+        {navLinks && navLinks.length > 0 && (
+          <nav className="flex flex-col gap-0.5 border-b border-slate-700/60 p-2" aria-label="Workspace modules">
+            <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Modules</p>
+            {navLinks.map((s) => {
+              const active = location.pathname === s.to
+              return (
+                <Link
+                  key={s.to}
+                  to={s.to}
+                  className={`rounded-lg px-2 py-2 text-left text-xs font-medium ${
+                    active
+                      ? 'bg-slate-800/90 text-white ring-1 ring-emerald-500/30'
+                      : 'text-slate-400 hover:bg-slate-800/90 hover:text-white'
+                  }`}
+                >
+                  {s.label}
+                </Link>
+              )
+            })}
+          </nav>
+        )}
 
         {sectionLinks && sectionLinks.length > 0 && (
           <nav className="flex flex-col gap-0.5 border-b border-slate-700/60 p-2" aria-label="Page sections">
